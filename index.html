@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tableland Rigs</title>
+<meta name="description" content="A 3k generative NFT built from 1,074 handcrafted works of art for the builders and creatives of cyberspace.">
+<link rel="icon" href="rigs.png">
+<style>
+  :root { --bg: #14161d; --panel: #1d2029; --text: #e9e9ee; --muted: #9a9cab; --accent: #f5c54b; --line: #2c3040; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  a { color: var(--accent); }
+  header, main, footer { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 24px; align-items: center; padding-top: 32px; padding-bottom: 24px; flex-wrap: wrap; }
+  header img { width: 96px; height: 96px; border-radius: 12px; }
+  h1 { margin: 0 0 4px; font-size: 28px; }
+  header p { margin: 0; color: var(--muted); max-width: 640px; }
+  .bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .bar input { width: 120px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font: inherit; }
+  button { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font: inherit; cursor: pointer; }
+  button:disabled { opacity: .4; cursor: default; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+  .card { display: block; background: var(--panel); border-radius: 10px; overflow: hidden; text-decoration: none; color: var(--text); }
+  .card img { width: 100%; height: auto; aspect-ratio: 1; display: block; background: var(--line); }
+  .card span { display: block; padding: 6px 10px; font-size: 14px; }
+  .pager { display: flex; gap: 8px; justify-content: center; align-items: center; margin: 24px 0; color: var(--muted); }
+  .rig { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 380px); gap: 24px; }
+  .rig img { width: 100%; height: auto; border-radius: 12px; display: block; }
+  .rig h2 { margin: 0 0 12px; }
+  .traits { display: grid; gap: 8px; }
+  .trait { background: var(--panel); border-radius: 8px; padding: 8px 12px; overflow-wrap: anywhere; }
+  .trait small { display: block; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  footer { color: var(--muted); font-size: 14px; padding-top: 24px; padding-bottom: 40px; }
+  @media (max-width: 760px) { .rig { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <a href="./"><img src="rigs.png" alt="Tableland Rigs"></a>
+  <div>
+    <h1>Tableland Rigs</h1>
+    <p>A 3k generative NFT built from 1,074 handcrafted works of art for the builders and creatives of cyberspace.</p>
+  </div>
+</header>
+<main id="app"></main>
+<footer>
+  Contract <a href="https://etherscan.io/address/0x8EAa9AE1Ac89B1c8C8a8104D08C045f78Aadb42D">0x8EAa…b42D</a> on Ethereum.
+  Metadata for each Rig is at <code>metadata/&lt;id&gt;.json</code>.
+</footer>
+<script>
+const TOTAL = 3000, PER_PAGE = 60;
+const app = document.getElementById("app");
+const params = new URLSearchParams(location.search);
+
+function el(tag, attrs = {}, ...children) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  for (const c of children) e.append(c);
+  return e;
+}
+
+function goToForm() {
+  const input = el("input", { type: "number", min: 1, max: TOTAL, placeholder: "Rig #" });
+  const go = el("button", {}, "Go");
+  const submit = () => { const n = parseInt(input.value, 10); if (n >= 1 && n <= TOTAL) location.search = "?rig=" + n; };
+  go.onclick = submit;
+  input.onkeydown = e => { if (e.key === "Enter") submit(); };
+  return el("div", { class: "bar" }, input, go);
+}
+
+function gallery(page) {
+  const pages = Math.ceil(TOTAL / PER_PAGE);
+  page = Math.min(Math.max(page, 1), pages);
+  const grid = el("div", { class: "grid" });
+  for (let id = (page - 1) * PER_PAGE + 1; id <= Math.min(page * PER_PAGE, TOTAL); id++) {
+    grid.append(el("a", { class: "card", href: "?rig=" + id },
+      el("img", { src: "thumbs/" + id + ".jpg", alt: "Rig #" + id, loading: "lazy", width: 300, height: 300 }),
+      el("span", {}, "Rig #" + id)));
+  }
+  const prev = el("button", {}, "Previous"), next = el("button", {}, "Next");
+  prev.disabled = page === 1; next.disabled = page === pages;
+  prev.onclick = () => location.search = "?page=" + (page - 1);
+  next.onclick = () => location.search = "?page=" + (page + 1);
+  app.append(goToForm(), grid, el("div", { class: "pager" }, prev, "Page " + page + " of " + pages, next));
+}
+
+async function rig(id) {
+  const res = await fetch("metadata/" + id + ".json");
+  if (!res.ok) { app.append(el("p", {}, "Rig not found.")); return; }
+  const m = await res.json();
+  const traits = el("div", { class: "traits" });
+  for (const a of m.attributes) {
+    const value = /^https?:\/\//.test(a.value) ? el("a", { href: a.value }, a.value) : a.value;
+    traits.append(el("div", { class: "trait" }, el("small", {}, a.trait_type), value));
+  }
+  const nav = el("div", { class: "bar" },
+    el("a", { href: "?page=" + Math.ceil(id / PER_PAGE) }, "← All Rigs"));
+  app.append(nav, el("div", { class: "rig" },
+    el("img", { src: m.image, alt: m.name }),
+    el("div", {}, el("h2", {}, m.name), traits,
+      el("p", {}, el("a", { href: "metadata/" + id + ".json" }, "Metadata JSON")))));
+  document.title = m.name + " · Tableland Rigs";
+}
+
+const rigId = parseInt(params.get("rig"), 10);
+if (rigId >= 1 && rigId <= TOTAL) rig(rigId);
+else gallery(parseInt(params.get("page"), 10) || 1);
+</script>
+</body>
+</html>

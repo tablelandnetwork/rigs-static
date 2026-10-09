@@ -1,0 +1,8 @@
+{
+  "name": "Tableland Rigs",
+  "description": "A 3k generative NFT built from 1,074 handcrafted works of art for the builders and creatives of cyberspace.",
+  "image": "https://tablelandnetwork.github.io/rigs-static/rigs.png",
+  "external_link": "https://tablelandnetwork.github.io/rigs-static/",
+  "seller_fee_basis_points": 500,
+  "fee_recipient": "0x9BE9627e25c9f348C1edB6E46dBCa2a6669e2D56"
+}

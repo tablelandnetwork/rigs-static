@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+._*
+
+# Editors and IDEs
+.vscode/
+.idea/
+*.swp
+*~
+
+# Python (tools/build_metadata.py)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local build inputs and scratch output
+tools/*.db
+tools/out/
+*.tar
+*.tar.part-*
+*.log
